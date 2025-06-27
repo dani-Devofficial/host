@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>Baseball Music</title>
+    <style>
+        video {
+            width: 50%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>기아타이거즈 응원가</h1>
+    <video data-src="./kia-tigers.mp4" controls preload="none">
+        브라우저가 비디오 태그를 제공하지 않습니다.
+    </video>
+    
+    <h1>롯데자이언츠 응원가</h1>
+    <video data-src="./lotte-gients.mp4" controls preload="none">
+        브라우저가 비디오 태그를 제공하지 않습니다.
+    </video>
+    
+    <h1>이닝 종료 음악</h1>
+    <audio src="inf.mp3" controls>
+        브라우저가 오디오 태그를 지원하지 않습니다.
+    </audio>
+
+    <script>
+        // Lazy Load Videos
+        document.addEventListener('DOMContentLoaded', () => {
+            const videos = document.querySelectorAll('video[data-src]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        video.src = video.dataset.src; // Set the actual video source
+                        video.removeAttribute('data-src'); // Clean up the data-src attribute
+                        observer.unobserve(video); // Stop observing once loaded
+                    }
+                });
+            });
+
+            videos.forEach(video => observer.observe(video));
+        });
+    </script>
+</body>
+</html>
