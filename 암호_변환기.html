@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>암호 변환기 🔐</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+      text-align: center;
+    }
+    input, textarea {
+      width: 80%;
+      font-size: 1.2em;
+      padding: 10px;
+      margin: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 암호 자동 변환기</h1>
+  <input id="inputText" placeholder="텍스트 또는 암호를 입력하세요..." />
+  <br />
+  <button onclick="encrypt()">텍스트 → 암호</button>
+  <button onclick="decrypt()">암호 → 텍스트</button>
+  <br />
+  <textarea id="result" rows="5" readonly></textarea>
+
+  <script>
+    const keyMap = {
+      "A":"3c2","B":"2a2","C":"797","D":"3bb","E":"7ee","F":"9c9","G":"a22","H":"998","I":"2c7","J":"3a2",
+      "K":"929","L":"a2a","M":"N18","N":"2eb","O":"3EB","P":"a99","Q":"e7o","R":"bnn","S":"s2s","T":"257",
+      "U":"9en","V":"M2m","W":"33a","X":"7bc","Y":"uns","Z":"cc2",
+      "a":"3c2","b":"2a2","c":"797","d":"3bb","e":"7ee","f":"9c9","g":"a22","h":"998","i":"2c7","j":"3a2",
+      "k":"929","l":"a2a","m":"N18","n":"2eb","o":"3EB","p":"a99","q":"e7o","r":"bnn","s":"s2s","t":"257",
+      "u":"9en","v":"M2m","w":"33a","x":"7bc","y":"uns","z":"cc2",
+      "ㄱ":"gh5","ㄴ":"h79","ㄷ":"end","ㄹ":"sun","ㅁ":"hat","ㅂ":"car","ㅅ":"ca1","ㅇ":"576","ㅈ":"c2c","ㅊ":"qa2",
+      "ㅋ":"zzu","ㅌ":"bbn","ㅍ":"a2q","ㅎ":"bq9","ㅏ":"obo","ㅑ":"aba","ㅓ":"qcq","ㅕ":"znb","ㅗ":"ods","ㅛ":"sne",
+      "ㅜ":"enc","ㅠ":"7mm","ㅡ":"l5i","ㅣ":"ssl","ㅟ":"htp","ㅢ":"5m5","ㅖ":"bnn","ㅔ":"qzz","ㅐ":"b2b","ㅒ":"cc2",
+      "1":"216","2":"9en","3":"bb8","4":"a2a","5":"7cc","6":"b2a","7":"3c7","8":"enn","9":"9ca","0":"QZ7",
+      "~":"BBQ","!":"enn","?":"7kr","@":"cdp","(":"e77",")":"ckk","[":"22e","]":"czq","{":"bcb","}":"an2",
+      ".":"2bq",":":"2nm",",":"qtv","_":"cde","-":"bnq","^":"300","&":"4sa","*":"chl","%":"eez","$":"xxp",
+      "|":"poi","\\":"qze","/":"sls"
+    };
+
+    const reverseMap = Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, k]));
+
+    function splitHangul(text) {
+      const choseong = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+      const jungseong = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
+      const jongseong = ["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+      return [...text].map(char => {
+        const code = char.charCodeAt(0);
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+          const temp = code - 0xAC00;
+          const 초 = Math.floor(temp / (21 * 28));
+          const 중 = Math.floor((temp % (21 * 28)) / 28);
+          const 종 = temp % 28;
+          return [choseong[초], jungseong[중], jongseong[종]].filter(Boolean);
+        } else {
+          return [char];
+        }
+      });
+    }
+
+    function joinHangul(components) {
+      const choseong = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+      const jungseong = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
+      const jongseong = ["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+
+      return components.map(group => {
+        if (group.length === 1) return group[0];
+        const 초 = choseong.indexOf(group[0]);
+        const 중 = jungseong.indexOf(group[1]);
+        const 종 = group[2] ? jongseong.indexOf(group[2]) : 0;
+        if (초 < 0 || 중 < 0) return group.join('');
+        return String.fromCharCode(0xAC00 + (초 * 21 * 28) + (중 * 28) + 종);
+      }).join('');
+    }
+
+    function encrypt() {
+      const input = document.getElementById("inputText").value;
+      const resultBox = document.getElementById("result");
+      const splitted = splitHangul(input);
+      const encrypted = splitted.map(group => {
+        return group.map(c => keyMap[c] || c).join(",");
+      }).join("/");
+      resultBox.value = encrypted;
+    }
+
+    function decrypt() {
+      const input = document.getElementById("inputText").value.trim();
+      const resultBox = document.getElementById("result");
+      const decryptedGroups = input.split("/").filter(Boolean).map(group => {
+        const chars = group.split(",").map(code => reverseMap[code] || code);
+        return chars;
+      });
+      const result = joinHangul(decryptedGroups);
+      resultBox.value = result;
+    }
+  </script>
+</body>
+</html>
